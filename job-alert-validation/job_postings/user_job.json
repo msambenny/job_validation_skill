@@ -1,0 +1,22 @@
+{
+  "company_name": "Example Corp",
+  "job_title": "Example Domain",
+  "department": "",
+  "job_type": "",
+  "work_mode": "",
+  "location": "",
+  "salary_min": "",
+  "salary_max": "",
+  "benefits": "",
+  "experience": "",
+  "education": "",
+  "skills": [],
+  "description": "documentation examples",
+  "application_deadline": "",
+  "contact_name": "",
+  "contact_whatsapp": "",
+  "contact_email": "",
+  "apply_link": "https://example.com",
+  "custom_note": "",
+  "posted_date": ""
+}
