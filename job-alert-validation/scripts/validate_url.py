@@ -6,66 +6,16 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from urllib.parse import urlparse
 
-import requests
-
-DEFAULT_TIMEOUT = 20
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/120.0.0.0 Safari/537.36"
-)
+from url_fetch import DEFAULT_TIMEOUT, probe_url, suggest_better_apply_url
 
 
 def validate_url(url: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
-    parsed = urlparse(url)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-        return {
-            "url": url,
-            "valid": False,
-            "status_code": None,
-            "final_url": None,
-            "error": f"Invalid URL: {url}",
-        }
-
-    headers = {"User-Agent": USER_AGENT, "Accept-Language": "en-US,en;q=0.9"}
-
-    try:
-        response = requests.head(
-            url,
-            headers=headers,
-            timeout=timeout,
-            allow_redirects=True,
-        )
-
-        # Some servers reject HEAD; fall back to GET only for that case.
-        if response.status_code in {405, 501}:
-            response = requests.get(
-                url,
-                headers=headers,
-                timeout=timeout,
-                allow_redirects=True,
-                stream=True,
-            )
-            response.close()
-
-        status_code = response.status_code
-        return {
-            "url": url,
-            "valid": status_code == 200,
-            "status_code": status_code,
-            "final_url": response.url,
-            "error": None if status_code == 200 else f"Expected status 200, got {status_code}",
-        }
-    except requests.RequestException as exc:
-        return {
-            "url": url,
-            "valid": False,
-            "status_code": None,
-            "final_url": None,
-            "error": f"Failed to reach URL: {exc}",
-        }
+    result = probe_url(url, timeout=timeout)
+    hint = suggest_better_apply_url(url)
+    if hint and hint not in result["warnings"]:
+        result["warnings"].append(hint)
+    return result
 
 
 def main() -> int:

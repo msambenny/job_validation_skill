@@ -16,14 +16,7 @@ import requests
 from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).parent))
-from validate_url import validate_url
-
-DEFAULT_TIMEOUT = 20
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/120.0.0.0 Safari/537.36"
-)
+from url_fetch import DEFAULT_TIMEOUT, fetch_page, probe_url
 
 EMPLOYMENT_TYPE_MAP = {
     "FULL_TIME": "Full-Time",
@@ -62,18 +55,6 @@ def empty_job_data(url: str) -> dict[str, Any]:
         "source_url": url,
         "raw_text": "",
     }
-
-
-def fetch_page(url: str, timeout: int = DEFAULT_TIMEOUT) -> tuple[str, str]:
-    response = requests.get(
-        url,
-        headers={"User-Agent": USER_AGENT, "Accept-Language": "en-US,en;q=0.9"},
-        timeout=timeout,
-        allow_redirects=True,
-    )
-    response.raise_for_status()
-    response.encoding = response.apparent_encoding or response.encoding
-    return response.text, response.url
 
 
 def clean_text(value: str | None) -> str:
@@ -402,14 +383,14 @@ def scrape_job_url(
         raise ValueError(f"Invalid URL: {url}")
 
     if require_valid:
-        validation = validate_url(url, timeout=timeout)
+        validation = probe_url(url, timeout=timeout)
         if not validation["valid"]:
-            raise ValueError(
-                validation["error"]
-                or f"URL validation failed with status {validation['status_code']}"
-            )
+            detail = validation["error"] or f"URL validation failed with status {validation['status_code']}"
+            if validation.get("warnings"):
+                detail = f"{detail} Warnings: {'; '.join(validation['warnings'])}"
+            raise ValueError(detail)
 
-    html, final_url = fetch_page(url, timeout=timeout)
+    html, final_url, _meta = fetch_page(url, timeout=timeout)
     return scrape_job_from_html(html, final_url)
 
 
@@ -445,11 +426,11 @@ def main() -> int:
         indent = 2 if args.pretty else None
         print(json.dumps(result, indent=indent, ensure_ascii=False))
         return 0
-    except requests.RequestException as exc:
-        print(json.dumps({"error": f"Failed to fetch URL: {exc}"}), file=sys.stderr)
-        return 1
     except ValueError as exc:
         print(json.dumps({"error": str(exc)}), file=sys.stderr)
+        return 1
+    except requests.RequestException as exc:
+        print(json.dumps({"error": f"Failed to fetch URL: {exc}"}), file=sys.stderr)
         return 1
 
 
