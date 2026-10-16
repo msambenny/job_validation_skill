@@ -368,6 +368,29 @@ def extract_from_html(soup: BeautifulSoup, data: dict[str, Any]) -> None:
         data["work_mode"] = infer_work_mode(page_text)
 
 
+def scrape_job_from_html(html: str, page_url: str) -> dict[str, Any]:
+    """Parse job fields from HTML without a network request (used by tests and scrape_job_url)."""
+    soup = BeautifulSoup(html, "html.parser")
+    data = empty_job_data(page_url)
+
+    for block in parse_json_ld_blocks(soup):
+        if is_job_posting(block):
+            extract_from_json_ld(block, data)
+
+    extract_from_meta(soup, data)
+    extract_from_html(soup, data)
+
+    apply_tags = soup.find_all("a", href=True)
+    for tag in apply_tags:
+        label = clean_text(tag.get_text()).lower()
+        href = urljoin(page_url, tag["href"])
+        if any(keyword in label for keyword in ("apply", "application", "careers")):
+            data["apply_link"] = href
+            break
+
+    return data
+
+
 def scrape_job_url(
     url: str,
     timeout: int = DEFAULT_TIMEOUT,
@@ -387,25 +410,7 @@ def scrape_job_url(
             )
 
     html, final_url = fetch_page(url, timeout=timeout)
-    soup = BeautifulSoup(html, "html.parser")
-    data = empty_job_data(final_url)
-
-    for block in parse_json_ld_blocks(soup):
-        if is_job_posting(block):
-            extract_from_json_ld(block, data)
-
-    extract_from_meta(soup, data)
-    extract_from_html(soup, data)
-
-    apply_tags = soup.find_all("a", href=True)
-    for tag in apply_tags:
-        label = clean_text(tag.get_text()).lower()
-        href = urljoin(final_url, tag["href"])
-        if any(keyword in label for keyword in ("apply", "application", "careers")):
-            data["apply_link"] = href
-            break
-
-    return data
+    return scrape_job_from_html(html, final_url)
 
 
 def main() -> int:

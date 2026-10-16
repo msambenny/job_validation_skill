@@ -23,12 +23,14 @@ flowchart TD
 
 ```bash
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pytest
 
 python scripts/validate_url.py "https://example.com/jobs/123" --pretty
 python scripts/web_scraping.py "https://example.com/jobs/123" --pretty > scraped_job.json
-python scripts/compare_job.py user_job.json scraped_job.json --pretty
-python scripts/format_whatsapp.py user_job.json
+python scripts/compare_job.py tests/fixtures/jobs/user_job.json tests/fixtures/jobs/scraped_job.json --pretty
+python scripts/format_whatsapp.py tests/fixtures/jobs/user_job.json
 python scripts/match_resume.py resume.pdf --pretty
 ```
 
-Validated job JSON files live in `job_postings/`. Resume matching reads that folder.
+Validated job JSON files are written locally to `job_postings/` for resume matching. They are gitignored and must not be committed. Canonical field list: [schemas/job_schema.json](../schemas/job_schema.json).

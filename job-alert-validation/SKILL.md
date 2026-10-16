@@ -11,7 +11,11 @@ Install dependencies once:
 
 ```bash
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pytest
 ```
+
+Job JSON shape is defined in [schemas/job_schema.json](schemas/job_schema.json).
 
 ## Instructions
 
