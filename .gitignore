@@ -8,3 +8,8 @@ venv/
 *.egg-info/
 .idea/
 .vscode/
+.pytest_cache/
+.ruff_cache/
+
+# Job posting JSON is local-only; keep the folder, do not commit listings.
+job-alert-validation/job_postings/*.json
