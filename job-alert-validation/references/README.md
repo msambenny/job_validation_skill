@@ -39,3 +39,5 @@ python scripts/match_resume.py resume.pdf --pretty
 ```
 
 Validated job JSON files are written locally to `job_postings/` for resume matching. They are gitignored and must not be committed. Canonical field list: [schemas/job_schema.json](../schemas/job_schema.json).
+
+URL probing uses [url_hosts.json](url_hosts.json) for short links (e.g. TCS `on.tcs.com`), event pages (e.g. Hack2Skill), and discouraged hosts (LinkedIn). Extend that file when a new apply-link domain needs GET-first or extra warnings.

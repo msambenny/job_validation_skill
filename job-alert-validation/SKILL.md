@@ -57,7 +57,7 @@ For offline checks (fixtures / HTML on disk), pass `--scraped-json scraped_job.j
 python scripts/validate_url.py "<url>" --pretty
 ```
 
-Expected valid response:
+Expected valid response (Phase 2 adds redirect and host-awareness fields):
 
 ```json
 {
@@ -65,9 +65,15 @@ Expected valid response:
   "valid": true,
   "status_code": 200,
   "final_url": "https://example.com/job-posting",
+  "fetch_method": "HEAD",
+  "redirect_chain": ["https://example.com/job-posting"],
+  "warnings": [],
+  "flags": [],
   "error": null
 }
 ```
+
+Prefer employer apply links (e.g. `on.tcs.com`, company careers pages) over LinkedIn URLs when both appear in an alert. LinkedIn often returns a login wall to automated checks even when the page looks fine in a browser. Host rules live in [references/url_hosts.json](references/url_hosts.json).
 
 5. Only if `valid` is `true`, scrape the page with `web_scraping.py`:
 
