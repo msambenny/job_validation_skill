@@ -34,11 +34,24 @@ Form Fields:
 - Contact details (name, WhatsApp, email)
 - Apply link and custom note
 
-Save the restructured data as JSON for later comparison.
+Save the restructured data as JSON for later comparison (for example `user_job.json`).
 
 3. If there is a link in the input, capture the URL.
 
-4. Confirm the link is genuine by running `validate_url.py`:
+**Optional — run the full pipeline in one step** after saving user JSON:
+
+```bash
+python scripts/validate_job.py user_job.json --pretty --whatsapp --save
+```
+
+- Exit code `0` — comparison passed; with `--save`, the job is stored under `job_postings/` for resume matching.
+- Exit code `1` — mismatches; report `comparison.summary.critical_mismatches` and do not save.
+- Exit code `2` — no URL in the JSON (and no `--url`).
+- Exit code `3` — URL validation failed; warn the user not to apply.
+
+For offline checks (fixtures / HTML on disk), pass `--scraped-json scraped_job.json` instead of hitting the network.
+
+4. Confirm the link is genuine by running `validate_url.py` (or rely on step 3 / `validate_job.py`):
 
 ```bash
 python scripts/validate_url.py "<url>" --pretty
@@ -89,6 +102,14 @@ python scripts/format_whatsapp.py user_job.json
 
 Show the output in chat so the user can paste it into the WhatsApp group. Layout: [references/whatsapp-template.md](references/whatsapp-template.md).
 
+When comparison succeeds, persist the validated record for resume matching:
+
+```bash
+python scripts/save_job.py user_job.json --pretty
+```
+
+Saved `*.json` files stay in `job_postings/` locally (gitignored).
+
 ## Resume matching (sub-skill)
 
 When the user uploads a resume, follow [resume-match/SKILL.md](resume-match/SKILL.md). Match it against jobs in `job_postings/` and skip any posting older than 15 days or missing `posted_date`.
@@ -105,8 +126,10 @@ See [references/README.md](references/README.md) for the end-to-end flow.
 
 | Script | Purpose |
 |--------|---------|
+| `scripts/validate_job.py` | End-to-end validate → scrape → compare → optional save / WhatsApp |
 | `scripts/validate_url.py` | Check URL returns HTTP 200 |
 | `scripts/web_scraping.py` | Scrape job fields from a validated URL |
 | `scripts/compare_job.py` | Compare user input JSON vs scraped JSON |
+| `scripts/save_job.py` | Write validated job JSON to `job_postings/` |
 | `scripts/format_whatsapp.py` | Format a copy-ready WhatsApp group message |
 | `scripts/match_resume.py` | Match a resume to jobs in `job_postings/` posted within 15 days |

@@ -35,6 +35,7 @@ Tests use offline HTML/JSON fixtures only (no live URL fetches).
 ## Script quick reference
 
 ```bash
+python scripts/validate_job.py tests/fixtures/jobs/user_job.json --scraped-json tests/fixtures/jobs/scraped_job.json --pretty
 python scripts/validate_url.py "https://example.com/jobs/1" --pretty
 python scripts/web_scraping.py "https://example.com/jobs/1" --pretty
 python scripts/compare_job.py tests/fixtures/jobs/user_job.json tests/fixtures/jobs/scraped_job.json --pretty
