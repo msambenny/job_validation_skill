@@ -37,6 +37,16 @@ def test_offline_html_fixture_runs_comparison() -> None:
     assert result["comparison"]["summary"]["total_compared"] > 0
 
 
+def test_trust_report_present_on_offline_run() -> None:
+    user = _load_job("user_job.json")
+    scraped = _load_job("scraped_job.json")
+
+    result, _code = run_job_validation(user, scraped_job=scraped)
+
+    assert result["trust"] is not None
+    assert "warnings" in result["trust"]
+
+
 def test_save_when_fixture_scraped_json_matches(tmp_path: Path) -> None:
     user = _load_job("user_job.json")
     scraped = _load_job("scraped_job.json")

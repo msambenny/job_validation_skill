@@ -21,6 +21,7 @@ flowchart TD
 4. `compare_job.py` — compare restructured user JSON with scraped JSON
 5. `save_job.py` — after a successful comparison, store JSON under `job_postings/`
 6. `format_whatsapp.py` — print a copy-ready WhatsApp group message (does not send)
+7. `list_jobs.py` / `housekeep_jobs.py` — index and maintain the local `job_postings/` library
 
 ## Example commands
 

@@ -15,6 +15,7 @@ Sub-skill of job-alert-validation. Use when the user uploads a resume (PDF or te
 
 ```bash
 python scripts/match_resume.py "<resume-path>" --pretty
+python scripts/match_resume.py "<resume-path>" --company "Acme" --location "Bengaluru" --min-score 0.4 --limit 5 --pretty
 ```
 
 3. Keep a job only when **both** are true:
