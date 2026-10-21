@@ -116,6 +116,18 @@ python scripts/save_job.py user_job.json --pretty
 
 Saved `*.json` files stay in `job_postings/` locally (gitignored).
 
+`validate_job.py` and `save_job.py` include a `trust` object with **domain mismatch** and **duplicate posting** warnings. These do not block saving by default — surface them to the user before sharing a WhatsApp alert.
+
+## Job library (local index)
+
+List saved jobs and freshness:
+
+```bash
+python scripts/list_jobs.py --pretty
+python scripts/housekeep_jobs.py --pretty
+python scripts/housekeep_jobs.py --remove-stale --pretty
+```
+
 ## Resume matching (sub-skill)
 
 When the user uploads a resume, follow [resume-match/SKILL.md](resume-match/SKILL.md). Match it against jobs in `job_postings/` and skip any posting older than 15 days or missing `posted_date`.
@@ -139,3 +151,5 @@ See [references/README.md](references/README.md) for the end-to-end flow.
 | `scripts/save_job.py` | Write validated job JSON to `job_postings/` |
 | `scripts/format_whatsapp.py` | Format a copy-ready WhatsApp group message |
 | `scripts/match_resume.py` | Match a resume to jobs in `job_postings/` posted within 15 days |
+| `scripts/list_jobs.py` | Index `job_postings/` with freshness metadata |
+| `scripts/housekeep_jobs.py` | Report or remove stale / duplicate saved jobs |

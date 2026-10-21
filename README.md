@@ -41,6 +41,8 @@ python scripts/web_scraping.py "https://example.com/jobs/1" --pretty
 python scripts/compare_job.py tests/fixtures/jobs/user_job.json tests/fixtures/jobs/scraped_job.json --pretty
 python scripts/format_whatsapp.py tests/fixtures/jobs/user_job.json
 python scripts/match_resume.py examples/sample_resume.txt --pretty
+python scripts/list_jobs.py --pretty
+python scripts/housekeep_jobs.py --pretty
 ```
 
 See [job-alert-validation/references/README.md](job-alert-validation/references/README.md) for the full workflow diagram.

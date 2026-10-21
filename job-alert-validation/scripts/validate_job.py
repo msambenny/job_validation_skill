@@ -11,6 +11,7 @@ from typing import Any
 
 from compare_job import compare_jobs
 from format_whatsapp import format_whatsapp_group_message
+from job_library import build_trust_report
 from save_job import save_job_record
 from validate_url import validate_url
 from web_scraping import scrape_job_from_html, scrape_job_url
@@ -70,6 +71,7 @@ def run_job_validation(
         "url_validation": None,
         "scraped": None,
         "comparison": None,
+        "trust": None,
         "saved_path": None,
         "whatsapp": None,
     }
@@ -95,14 +97,29 @@ def run_job_validation(
 
     exit_code = 0 if comparison["matches"] else 1
 
+    record = prepare_record_for_save(user_job, scraped_job, final_url)
+    trust_dir = jobs_dir if (jobs_dir is not None or save) else None
+    result["trust"] = build_trust_report(
+        record,
+        apply_url=posting_url,
+        final_url=final_url,
+        jobs_dir=trust_dir or DEFAULT_JOBS_DIR,
+    )
+
     if save and comparison["matches"]:
-        record = prepare_record_for_save(user_job, scraped_job, final_url)
         saved_path = save_job_record(
             record,
             jobs_dir or DEFAULT_JOBS_DIR,
             overwrite=overwrite,
         )
         result["saved_path"] = str(saved_path)
+        result["trust"] = build_trust_report(
+            record,
+            apply_url=posting_url,
+            final_url=final_url,
+            jobs_dir=jobs_dir or DEFAULT_JOBS_DIR,
+            exclude_path=Path(saved_path),
+        )
 
     if include_whatsapp and comparison["matches"]:
         record = prepare_record_for_save(user_job, scraped_job, final_url)

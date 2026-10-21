@@ -13,6 +13,8 @@ from typing import Any
 
 import jsonschema
 
+from job_library import build_trust_report
+
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_JOBS_DIR = SKILL_ROOT / "job_postings"
 SCHEMA_PATH = SKILL_ROOT / "schemas" / "job_schema.json"
@@ -103,7 +105,13 @@ def main() -> int:
             overwrite=args.overwrite,
             validate=not args.skip_schema,
         )
-        result = {"saved": True, "path": str(path)}
+        trust = build_trust_report(
+            job,
+            apply_url=str(job.get("apply_link") or job.get("source_url") or ""),
+            jobs_dir=args.jobs_dir,
+            exclude_path=path,
+        )
+        result = {"saved": True, "path": str(path), "trust": trust}
         indent = 2 if args.pretty else None
         print(json.dumps(result, indent=indent, ensure_ascii=False))
         return 0

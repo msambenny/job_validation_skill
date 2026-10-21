@@ -4,7 +4,8 @@ from datetime import date
 
 import pytest
 
-from match_resume import parse_posted_date, posting_freshness, score_resume_against_job
+from job_library import parse_posted_date, posting_freshness
+from match_resume import score_resume_against_job
 
 
 @pytest.mark.parametrize(
