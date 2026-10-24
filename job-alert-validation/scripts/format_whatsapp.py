@@ -46,7 +46,7 @@ def format_whatsapp_group_message(job: dict[str, Any]) -> str:
         _line("🏢", "Company", job.get("company_name")),
         _line("📋", "Opportunity", job.get("job_title")),
         _line("🗂", "Department", job.get("department")),
-        _line("🗂", "Type", job.get("job_type")),
+        _line("💼", "Type", job.get("job_type")),
         _line("🏠", "Work mode", job.get("work_mode")),
         _line("📍", "Location", job.get("location")),
     ]

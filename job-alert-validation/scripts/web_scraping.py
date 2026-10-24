@@ -111,6 +111,8 @@ def first_string(value: Any) -> str:
         return ""
     if isinstance(value, str):
         return clean_text(value)
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return f"{value:g}" if isinstance(value, float) else str(value)
     if isinstance(value, list):
         for item in value:
             text = first_string(item)
@@ -162,15 +164,21 @@ def parse_salary(base_salary: Any) -> tuple[str, str]:
         maximum = first_string(value.get("maxValue"))
         if not minimum and not maximum:
             minimum = first_string(value.get("value"))
+        suffix = first_string(base_salary.get("currency"))
         unit = first_string(value.get("unitText"))
         if unit:
+            suffix = f"{suffix} per {unit.lower()}".strip()
+        if suffix:
             if minimum:
-                minimum = f"{minimum} {unit}".strip()
+                minimum = f"{minimum} {suffix}"
             if maximum:
-                maximum = f"{maximum} {unit}".strip()
+                maximum = f"{maximum} {suffix}"
         return minimum, maximum
 
     amount = first_string(value)
+    currency = first_string(base_salary.get("currency"))
+    if amount and currency:
+        amount = f"{amount} {currency}"
     return amount, amount
 
 
@@ -313,6 +321,9 @@ def extract_from_html(soup: BeautifulSoup, data: dict[str, Any]) -> None:
 
     page_text = clean_text(soup.get_text(separator="\n"))
     data["raw_text"] = page_text
+    # Keep line breaks so "Label: value" lookups stop at the end of their line.
+    lines = (clean_text(line) for line in soup.get_text(separator="\n").splitlines())
+    line_text = "\n".join(line for line in lines if line)
 
     if not data["description"]:
         main = soup.find("main") or soup.find("article") or soup.body
@@ -321,12 +332,12 @@ def extract_from_html(soup: BeautifulSoup, data: dict[str, Any]) -> None:
 
     if not data["department"]:
         data["department"] = extract_labeled_value(
-            page_text, ["department", "team", "division", "business unit"]
+            line_text, ["department", "team", "division", "business unit"]
         )
 
     if not data["benefits"]:
         data["benefits"] = extract_labeled_value(
-            page_text, ["benefits", "perks", "what we offer", "compensation & benefits"]
+            line_text, ["benefits", "perks", "what we offer", "compensation & benefits"]
         )
 
     if not data["skills"]:
@@ -342,7 +353,7 @@ def extract_from_html(soup: BeautifulSoup, data: dict[str, Any]) -> None:
 
     if not data["contact_name"]:
         data["contact_name"] = extract_labeled_value(
-            page_text, ["contact", "hiring manager", "recruiter", "contact person"]
+            line_text, ["contact", "hiring manager", "recruiter", "contact person"]
         )
 
     if not data["work_mode"]:
