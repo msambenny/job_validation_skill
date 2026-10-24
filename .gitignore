@@ -12,4 +12,4 @@ venv/
 .ruff_cache/
 
 # Job posting JSON is local-only; keep the folder, do not commit listings.
-job-alert-validation/job_postings/*.json
+.claude/skills/job-alert-validation/job_postings/*.json

@@ -1,22 +1,45 @@
 # job_validation_skill
 
-Cursor Agent Skill for validating WhatsApp-style job alerts: restructure input, check apply links, scrape postings, compare against user text, format group messages, and match resumes to a local job library.
+Claude Code skills for validating WhatsApp-style job alerts: restructure input, check apply links, scrape postings, compare against user text, flag scam signals, format group messages, and match resumes to a local job library.
+
+## Use it in Claude Code
+
+**In this repository** — the skills are already in `.claude/skills/`, so Claude Code picks them up when you open the repo:
+
+```text
+/job-alert-validation <paste the job alert here>
+/resume-match path/to/resume.pdf
+```
+
+You don't have to type the command: Claude also loads the skill on its own when you paste a job alert or ask whether a posting is real.
+
+**In all your projects** — copy both skill folders to your personal skills directory (keep them side by side; `resume-match` uses `job-alert-validation`'s scripts):
+
+```bash
+mkdir -p ~/.claude/skills
+cp -r .claude/skills/job-alert-validation .claude/skills/resume-match ~/.claude/skills/
+python3 -m pip install -r ~/.claude/skills/job-alert-validation/requirements.txt
+```
+
+On Windows, copy them to `%USERPROFILE%\.claude\skills\`.
+
+The skill installs its Python dependencies on first use if they are missing. Validated jobs are saved to `job_postings/` inside the `job-alert-validation` folder (gitignored).
 
 ## Layout
 
 | Path | Purpose |
 |------|---------|
-| [job-alert-validation/SKILL.md](job-alert-validation/SKILL.md) | Main agent workflow |
-| [job-alert-validation/resume-match/SKILL.md](job-alert-validation/resume-match/SKILL.md) | Resume matching sub-skill |
-| [job-alert-validation/scripts/](job-alert-validation/scripts/) | CLI tools used by the agent |
-| [job-alert-validation/schemas/job_schema.json](job-alert-validation/schemas/job_schema.json) | Canonical job JSON shape |
-| [job-alert-validation/job_postings/](job-alert-validation/job_postings/) | Local validated jobs (JSON not committed) |
-| [job-alert-validation/demo/](job-alert-validation/demo/) | Offline end-to-end demo (`run_demo.py`) |
+| [.claude/skills/job-alert-validation/SKILL.md](.claude/skills/job-alert-validation/SKILL.md) | `/job-alert-validation` — main workflow |
+| [.claude/skills/resume-match/SKILL.md](.claude/skills/resume-match/SKILL.md) | `/resume-match` — match a resume to saved jobs |
+| [.claude/skills/job-alert-validation/scripts/](.claude/skills/job-alert-validation/scripts/) | CLI tools the skills run |
+| [.claude/skills/job-alert-validation/schemas/job_schema.json](.claude/skills/job-alert-validation/schemas/job_schema.json) | Canonical job JSON shape |
+| [.claude/skills/job-alert-validation/job_postings/](.claude/skills/job-alert-validation/job_postings/) | Local validated jobs (JSON not committed) |
+| [.claude/skills/job-alert-validation/demo/](.claude/skills/job-alert-validation/demo/) | Offline end-to-end demo (`run_demo.py`) |
 
-## Setup
+## Development setup
 
 ```bash
-cd job-alert-validation
+cd .claude/skills/job-alert-validation
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -25,7 +48,7 @@ pip install -r requirements-dev.txt
 
 ## Demo (offline, ~1 second)
 
-From `job-alert-validation/`:
+From `.claude/skills/job-alert-validation/`:
 
 ```bash
 python demo/run_demo.py          # add --json to see full output of each step
@@ -41,7 +64,7 @@ Posting dates are filled in relative to today, so the demo never goes stale agai
 
 ## Run tests
 
-From `job-alert-validation/`:
+From `.claude/skills/job-alert-validation/`:
 
 ```bash
 pytest
@@ -62,4 +85,4 @@ python scripts/list_jobs.py --pretty
 python scripts/housekeep_jobs.py --pretty
 ```
 
-See [job-alert-validation/references/README.md](job-alert-validation/references/README.md) for the full workflow diagram.
+See [references/README.md](.claude/skills/job-alert-validation/references/README.md) for the full workflow diagram.
