@@ -60,3 +60,25 @@ def test_skipped_fields_when_user_omits_them() -> None:
 
     assert any(item["field"] == "company_name" for item in skipped)
     assert result["matches"] is True
+
+
+def test_salary_units_are_normalized() -> None:
+    user = {"company_name": "Acme", "salary_min": "12 LPA", "salary_max": "₹18,00,000"}
+    scraped = {"company_name": "Acme", "salary_min": "1200000 INR", "salary_max": "1800000 INR"}
+
+    result = compare_jobs(user, scraped)
+    salary = {item["field"]: item for item in result["fields"] if item["field"].startswith("salary")}
+
+    assert salary["salary_min"]["status"] == "match"
+    assert salary["salary_max"]["status"] == "match"
+    assert result["summary"]["salary_warnings"] == []
+
+
+def test_salary_amount_difference_is_warning() -> None:
+    user = {"company_name": "Acme", "salary_min": "25 LPA"}
+    scraped = {"company_name": "Acme", "salary_min": "1200000 INR"}
+
+    result = compare_jobs(user, scraped)
+
+    assert result["matches"] is True
+    assert result["summary"]["salary_warnings"] == ["salary_min"]

@@ -61,6 +61,51 @@ def similarity(left: str, right: str) -> float:
     return SequenceMatcher(None, left, right).ratio()
 
 
+SALARY_TOLERANCE = 0.05
+SALARY_MULTIPLIERS = [
+    (r"\b(crores?|cr)\b", 10_000_000),
+    (r"\b(lpa|lakhs?|lacs?|l)\b", 100_000),
+    (r"\b(million|mn|m)\b", 1_000_000),
+    (r"\b(k)\b", 1_000),
+]
+SALARY_CURRENCIES = [
+    (r"₹|\binr\b|\brs\.?|\blpa\b|\blakhs?\b|\blacs?\b|\bcrores?\b", "INR"),
+    (r"\$|\busd\b", "USD"),
+    (r"€|\beur\b", "EUR"),
+    (r"£|\bgbp\b", "GBP"),
+]
+
+
+def parse_salary(value: Any) -> tuple[float, str | None] | None:
+    """Parse '12 LPA', '1200000 INR', '₹12,00,000' or '$90k' into (amount, currency)."""
+    text = normalize(value)
+    number = re.search(r"\d[\d,]*(?:\.\d+)?", text)
+    if not number:
+        return None
+    amount = float(number.group(0).replace(",", ""))
+    rest = text[number.end():]
+    for pattern, multiplier in SALARY_MULTIPLIERS:
+        if re.match(r"\s*" + pattern, rest):
+            amount *= multiplier
+            break
+    currency = next((code for pattern, code in SALARY_CURRENCIES if re.search(pattern, text)), None)
+    return amount, currency
+
+
+def compare_salary(user_value: Any, scraped_value: Any) -> float | None:
+    """Return 1.0/0.0 when both salaries parse to amounts, else None to fall back to text."""
+    user = parse_salary(user_value)
+    scraped = parse_salary(scraped_value)
+    if not user or not scraped:
+        return None
+    (user_amount, user_currency), (scraped_amount, scraped_currency) = user, scraped
+    if user_currency and scraped_currency and user_currency != scraped_currency:
+        return 0.0
+    if scraped_amount == 0:
+        return 1.0 if user_amount == 0 else 0.0
+    return 1.0 if abs(user_amount - scraped_amount) / scraped_amount <= SALARY_TOLERANCE else 0.0
+
+
 def compare_skills(user_skills: list[Any], scraped_skills: list[Any]) -> dict[str, Any]:
     user = {normalize(skill) for skill in user_skills if normalize(skill)}
     scraped = {normalize(skill) for skill in scraped_skills if normalize(skill)}
@@ -124,6 +169,17 @@ def compare_field(field: str, user_value: Any, scraped_value: Any) -> dict[str, 
             "status": "missing_on_site",
             "score": 0.0,
             "note": "Field not found on the job page",
+        }
+
+    salary_score = compare_salary(user_value, scraped_value) if field in WARNING_ONLY_FIELDS else None
+    if salary_score is not None:
+        return {
+            "field": field,
+            "user_value": user_value,
+            "scraped_value": scraped_value,
+            "status": "match" if salary_score else "mismatch",
+            "score": salary_score,
+            "note": "Compared as normalized amounts",
         }
 
     score = similarity(user_text, scraped_text)

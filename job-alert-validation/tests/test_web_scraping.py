@@ -79,3 +79,19 @@ def test_extract_from_meta_does_not_overwrite_existing_title() -> None:
     extract_from_meta(soup, data)
 
     assert data["job_title"] == "Existing Title"
+
+
+def test_json_ld_numeric_salary_is_extracted() -> None:
+    html = (FIXTURES / "json_ld_job.html").read_text(encoding="utf-8")
+    data = scrape_job_from_html(html, "https://careers.acmelabs.example/jobs/backend-engineer")
+
+    assert data["salary_min"] == "1200000 INR per year"
+    assert data["salary_max"] == "1800000 INR per year"
+
+
+def test_labeled_values_stop_at_line_end() -> None:
+    html = "<html><body><p>Department: Platform</p><p>Benefits: Health insurance</p></body></html>"
+    data = scrape_job_from_html(html, "https://example.com/jobs/1")
+
+    assert data["department"] == "Platform"
+    assert data["benefits"] == "Health insurance"

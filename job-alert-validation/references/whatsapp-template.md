@@ -7,7 +7,8 @@ Skip empty fields. Use WhatsApp markup: `*bold*` for labels.
 ```
 🏢 *Company:* {company_name}
 📋 *Opportunity:* {job_title}
-🗂 *Type:* {job_type}
+🗂 *Department:* {department}
+💼 *Type:* {job_type}
 🏠 *Work mode:* {work_mode}
 📍 *Location:* {location}
 
